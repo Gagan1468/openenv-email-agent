@@ -29,7 +29,7 @@ def root():
 
 
 # IMPORTANT for validator
-def create_app():
+def main():
     return app
 
 
