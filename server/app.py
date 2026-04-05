@@ -28,8 +28,5 @@ def root():
     return {"message": "OpenEnv Email Agent is running"}
 
 
-# IMPORTANT for validator
 def main():
     return app
-
-
