@@ -1,0 +1,9 @@
+[project]
+name = "openenv-email-agent"
+version = "0.1.0"
+description = "OpenEnv email triage environment"
+authors = [{name = "Gagan"}]
+requires-python = ">=3.9"
+
+[tool.openenv]
+entrypoint = "server:app"
