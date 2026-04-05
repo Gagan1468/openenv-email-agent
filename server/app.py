@@ -27,6 +27,6 @@ def step(action: dict):
 def root():
     return {"message": "OpenEnv Email Agent is running"}
 
-
 def main():
-    return app
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=7860)
