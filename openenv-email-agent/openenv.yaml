@@ -1,9 +1,0 @@
-name: email_agent_env
-description: AI email classification environment
-actions:
-  - support
-  - sales
-  - business
-observations:
-  type: text
-reward_range: [0.0, 1.0]
