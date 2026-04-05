@@ -1,8 +1,8 @@
-FROM python:3.14
+FROM python:3.10
 
 WORKDIR /app
 COPY . .
 
-RUN pip install pyyaml
+RUN pip install -r requirements.txt
 
-CMD ["python", "run_agent.py"]
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "7860"]
