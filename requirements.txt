@@ -1,2 +1,4 @@
-fastapi
+openai
 uvicorn
+fastapi
+pyyaml
