@@ -1,57 +1,39 @@
-import sys
+import os
 from env import EmailEnv
+from openai import OpenAI
 
-difficulty = "hard"
+# MUST use their proxy
+client = OpenAI(
+    base_url=os.environ["API_BASE_URL"],
+    api_key=os.environ["API_KEY"]
+)
 
-if len(sys.argv) > 1:
-    difficulty = sys.argv[1]
+env = EmailEnv()
 
-env = EmailEnv(difficulty)
+state = env.reset()
+print("Email:", state)
 
-episodes = 20
-total_reward = 0
-confused = []
+prompt = f"""
+Classify this email into one category:
+support, sales, business
 
-print("Running evaluation...\n")
+Email:
+{state}
 
-for i in range(episodes):
-    state = env.reset()
-    email = state["email"]
+Only return the category.
+"""
 
-    # rule-based agent
-    if "refund" in email.lower() or "bug" in email.lower():
-        action = "support"
-    elif "pricing" in email.lower():
-        action = "sales"
-    else:
-        action = "business"
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "user", "content": prompt}
+    ]
+)
 
-    _, reward, _, info = env.step(action)
-    total_reward += reward
+action = response.choices[0].message.content.strip().lower()
 
-    if reward < 1.0:
-        confused.append((email, action, info["correct_label"]))
+print("Agent action:", action)
 
-    print(f"Episode {i+1}")
-    print("Email:", email)
-    print("Action:", action)
-    print("Response:", info["response"])
-    print("Reward:", reward)
-    print("-" * 30)
+state, reward, done, _ = env.step(action)
 
-accuracy = total_reward / episodes
-
-print("\nEvaluation Summary")
-print("=" * 40)
-print("Total Episodes:", episodes)
-print("Total Reward:", round(total_reward, 2))
-print("Average Reward:", round(accuracy, 2))
-print("Accuracy (%):", round(accuracy * 100, 2))
-print("=" * 40)
-
-print("\nConfused Cases:")
-for item in confused:
-    print("Email:", item[0])
-    print("Predicted:", item[1])
-    print("Correct:", item[2])
-    print("-" * 20)
+print("Reward:", reward)
