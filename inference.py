@@ -2,22 +2,17 @@ import os
 import requests
 from openai import OpenAI
 
-API_BASE_URL = os.getenv("API_BASE_URL")
-API_KEY = os.getenv("API_KEY")
+API_BASE_URL = os.environ["API_BASE_URL"]
+API_KEY = os.environ["API_KEY"]
 
-client = None
-if API_BASE_URL and API_KEY:
-    client = OpenAI(
-        base_url=API_BASE_URL,
-        api_key=API_KEY
-    )
+client = OpenAI(
+    base_url=API_BASE_URL,
+    api_key=API_KEY
+)
 
 BASE_URL = "http://localhost:7860"
 
 def llm_classify(email_text):
-    if client is None:
-        return "business"   # safe fallback when running on HF
-
     response = client.chat.completions.create(
         model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),
         messages=[{
