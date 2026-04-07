@@ -62,3 +62,11 @@ def root():
     except Exception as e:
         print("LLM call skipped:", str(e))
         return {"message": "running"}
+
+def main():
+    import uvicorn
+    uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
+
+
+if __name__ == "__main__":
+    main()
