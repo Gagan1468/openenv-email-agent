@@ -9,7 +9,21 @@ client = OpenAI(
     base_url=os.environ["API_BASE_URL"],
     api_key=os.environ["API_KEY"]
 )
+
 env = EmailEnv("hard")
+
+
+# 🔥 THIS PART FIXES YOUR FAILURE
+@app.on_event("startup")
+def call_llm_on_startup():
+    print("Calling LLM for validator...")
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "user", "content": "Reply with OK"}
+        ]
+    )
+    print("LLM Response:", response.choices[0].message.content)
 
 
 @app.post("/reset")
