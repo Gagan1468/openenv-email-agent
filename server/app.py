@@ -1,7 +1,14 @@
 from fastapi import FastAPI
 from env import EmailEnv
+import os
+from openai import OpenAI
 
 app = FastAPI()
+
+client = OpenAI(
+    base_url=os.environ["API_BASE_URL"],
+    api_key=os.environ["API_KEY"]
+)
 env = EmailEnv("hard")
 
 
