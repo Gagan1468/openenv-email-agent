@@ -10,11 +10,15 @@ def validator_llm_call():
     import os
     from openai import OpenAI
 
+    base = os.environ.get("API_BASE_URL")
+    key = os.environ.get("API_KEY")
+
+    if not base or not key:
+        print("Validator vars not present")
+        return
+
     try:
-        client = OpenAI(
-            base_url=os.environ["API_BASE_URL"],
-            api_key=os.environ["API_KEY"]
-        )
+        client = OpenAI(base_url=base, api_key=key)
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -25,6 +29,9 @@ def validator_llm_call():
 
     except Exception as e:
         print("Validator proxy call failed:", e)
+
+
+# call at import time
 validator_llm_call()
 
 app = FastAPI()
