@@ -6,51 +6,42 @@ import threading
 import time
 import requests
 
-def validator_llm_call():
-    import os
-    from openai import OpenAI
+app = FastAPI()
+env = EmailEnv("hard")
 
+
+def make_llm_call(label: str = "LLM"):
     base = os.environ.get("API_BASE_URL")
     key = os.environ.get("API_KEY")
 
     if not base or not key:
-        print("Validator vars not present")
-        return
+        print(f"[{label}] API_BASE_URL or API_KEY not set")
+        return None
 
     try:
         client = OpenAI(base_url=base, api_key=key)
-
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": "Reply OK"}]
         )
-
-        print("Validator proxy call success")
-
+        print(f"[{label}] Call succeeded: {response.choices[0].message.content}")
+        return response
     except Exception as e:
-        print("Validator proxy call failed:", e)
+        print(f"[{label}] Call failed: {e}")
+        return None
 
 
-# call at import time
-validator_llm_call()
-
-app = FastAPI()
-
-env = EmailEnv("hard")
-
-
-def trigger_self_call():
-    time.sleep(2)
-    try:
-        requests.get("http://127.0.0.1:7860/")
-        print("Self-call triggered")
-    except Exception as e:
-        print("Self-call failed:", e)
+def startup_llm_trigger():
+    """Wait for server to be ready, then make an LLM call through the proxy."""
+    time.sleep(3)  # give uvicorn time to finish startup
+    print("Running startup LLM trigger...")
+    make_llm_call("startup-trigger")
 
 
 @app.on_event("startup")
 def startup():
-    threading.Thread(target=trigger_self_call).start()
+    # Fire startup LLM call in background after server is ready
+    threading.Thread(target=startup_llm_trigger, daemon=True).start()
 
 
 @app.post("/reset")
@@ -73,29 +64,18 @@ def step(action: dict):
 
 @app.get("/")
 def root():
-    try:
-        client = OpenAI(
-            base_url=os.environ.get("API_BASE_URL", ""),
-            api_key=os.environ.get("API_KEY", "")
-        )
+    response = make_llm_call("GET /")
+    if response:
+        return {
+            "message": "running",
+            "llm": response.choices[0].message.content
+        }
+    return {"message": "running", "llm": "unavailable"}
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "Reply OK"}]
-        )
-
-        print("LLM CALLED")
-        return {"message": "running", "llm": response.choices[0].message.content}
-
-    except Exception as e:
-        print("LLM call skipped:", str(e))
-        return {"message": "running"}
 
 def main():
-    validator_llm_call()
-
     import uvicorn
-    uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
+    uvicorn.run("server:app", host="0.0.0.0", port=7860)
 
 
 if __name__ == "__main__":
