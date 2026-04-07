@@ -2,17 +2,15 @@ from fastapi import FastAPI
 from env import EmailEnv
 import os
 from openai import OpenAI
+import threading
+import time
+import requests
 
 app = FastAPI()
 
-client = OpenAI(
-    base_url=os.environ.get("API_BASE_URL", "https://api.openai.com/v1"),
-    api_key=os.environ.get("API_KEY", "test")
-)
-
 env = EmailEnv("hard")
 
-# 👇 ADD THIS BLOCK HERE
+
 def trigger_self_call():
     time.sleep(2)
     try:
@@ -25,30 +23,7 @@ def trigger_self_call():
 @app.on_event("startup")
 def startup():
     threading.Thread(target=trigger_self_call).start()
-# 👆 END BLOCK
 
-
-
-@app.on_event("startup")
-def call_llm_on_startup():
-    base = os.environ.get("API_BASE_URL")
-    key = os.environ.get("API_KEY")
-
-    # Only call when validator injects keys
-    if not base or not key:
-        print("LLM env vars not present — skipping startup call")
-        return
-
-    print("Calling LLM for validator...")
-
-    client = OpenAI(base_url=base, api_key=key)
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": "Reply OK"}]
-    )
-
-    print("LLM Response:", response.choices[0].message.content)
 
 @app.post("/reset")
 def reset():
@@ -88,12 +63,3 @@ def root():
             return {"message": "running", "llm_error": str(e)}
 
     return {"message": "OpenEnv Email Agent is running"}
-
-
-def main():
-    import uvicorn
-    uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
-
-
-if __name__ == "__main__":
-    main()
