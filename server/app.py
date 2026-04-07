@@ -54,6 +54,23 @@ def step(action: dict):
 
 @app.get("/")
 def root():
+    base = os.environ.get("API_BASE_URL")
+    key = os.environ.get("API_KEY")
+
+    if base and key:
+        client = OpenAI(base_url=base, api_key=key)
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": "Reply OK"}]
+            )
+            return {
+                "message": "OpenEnv Email Agent is running",
+                "llm": response.choices[0].message.content
+            }
+        except Exception as e:
+            return {"message": "running", "llm_error": str(e)}
+
     return {"message": "OpenEnv Email Agent is running"}
 
 
