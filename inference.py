@@ -35,10 +35,7 @@ while not done:
 
     action = llm_classify(email)
 
-if action not in ["support", "sales", "business"]:
-    action = "business"
-    except Exception as e:
-        print(f"LLM failed: {e}, using fallback")
+    if action not in ["support", "sales", "business"]:
         action = "business"
 
     result = requests.post(f"{BASE_URL}/step", json={"action": action}).json()
