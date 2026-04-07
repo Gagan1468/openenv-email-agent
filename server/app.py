@@ -65,13 +65,24 @@ def step(action: dict):
 
 @app.get("/")
 def root():
-    response = make_llm_call("GET /")
-    if response:
-        return {
-            "message": "running",
-            "llm": response.choices[0].message.content
-        }
-    return {"message": "running", "llm": "unavailable"}
+    base = os.environ.get("API_BASE_URL")
+    key = os.environ.get("HF_TOKEN")        # ← changed from API_KEY
+
+    print(f"API_BASE_URL: {base}")
+    print(f"HF_TOKEN present: {bool(key)}")
+
+    try:
+        client = OpenAI(base_url=base, api_key=key)
+        response = client.chat.completions.create(
+            model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),   # ← use MODEL_NAME
+            messages=[{"role": "user", "content": "Reply OK"}]
+        )
+        print("LLM call succeeded:", response.choices[0].message.content)
+        return {"message": "running", "llm": response.choices[0].message.content}
+
+    except BaseException as e:
+        print("LLM call failed:", repr(e))
+        return {"message": "running", "llm": "unavailable"}
 
 
 def main():
