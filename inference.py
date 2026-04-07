@@ -33,10 +33,10 @@ while not done:
     step += 1
     email = state["email"]
 
-    try:
-        action = llm_classify(email)
-        if action not in ["support", "sales", "business"]:
-            action = "business"
+    action = llm_classify(email)
+
+if action not in ["support", "sales", "business"]:
+    action = "business"
     except Exception as e:
         print(f"LLM failed: {e}, using fallback")
         action = "business"
