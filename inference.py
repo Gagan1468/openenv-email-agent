@@ -1,30 +1,41 @@
 import os
+import time
 import requests
 from openai import OpenAI
 
-API_BASE_URL = os.environ["API_BASE_URL"]
-API_KEY = os.environ["API_KEY"]
-
-client = OpenAI(
-    base_url=API_BASE_URL,
-    api_key=API_KEY
-)
-
 BASE_URL = "http://localhost:7860"
 
+def wait_for_server():
+    for _ in range(20):
+        try:
+            requests.get(BASE_URL, timeout=2)
+            return
+        except Exception:
+            time.sleep(1)
+    raise RuntimeError("Server not ready")
+
 def llm_classify(email_text):
+    client = OpenAI(
+        base_url=os.environ["API_BASE_URL"],
+        api_key=os.environ["API_KEY"]
+    )
     response = client.chat.completions.create(
         model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),
         messages=[{
             "role": "user",
-            "content": f"Classify this email into one of: support, sales, business.\nEmail: {email_text}\nReply with just the category word."
+            "content": (
+                "Classify this email into one of: support, sales, business.\n"
+                f"Email: {email_text}\n"
+                "Reply with just the category word."
+            )
         }]
     )
     return response.choices[0].message.content.strip().lower()
 
 print("[START] task=email env=openenv model=gpt-4o-mini")
 
-# Reset environment
+wait_for_server()
+
 state = requests.post(f"{BASE_URL}/reset").json()["state"]
 
 done = False
@@ -36,7 +47,6 @@ while not done:
     email = state["email"]
 
     action = llm_classify(email)
-
     if action not in ["support", "sales", "business"]:
         action = "business"
 
