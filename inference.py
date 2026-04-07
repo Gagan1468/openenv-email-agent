@@ -2,12 +2,16 @@ import os
 import requests
 from openai import OpenAI
 
-# Connect to validator's proxy
-client = OpenAI(
-    base_url=os.environ["API_BASE_URL"],
-    api_key=os.environ["API_KEY"]
-)
+API_BASE_URL = os.getenv("API_BASE_URL")
+API_KEY = os.getenv("API_KEY")
 
+if not API_BASE_URL:
+    raise RuntimeError("API_BASE_URL not set — required for validator")
+
+client = OpenAI(
+    base_url=API_BASE_URL,
+    api_key=API_KEY
+)
 BASE_URL = "http://localhost:7860"
 
 def llm_classify(email_text):
