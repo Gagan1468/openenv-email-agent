@@ -70,12 +70,12 @@ def root():
     print(f"API_BASE_URL: '{base}'")
     print(f"API_KEY present: {bool(key)}")
 
-    if not base or not key:
-        print("Missing credentials")
+    if not key:
+        print("Missing API_KEY")
         return {"message": "running", "llm": "unavailable"}
 
     try:
-        client = OpenAI(base_url=base, api_key=key)
+        client = OpenAI(base_url=base, api_key=key)  # base can be None, OpenAI handles it
         response = client.chat.completions.create(
             model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),
             messages=[{"role": "user", "content": "Reply OK"}]
