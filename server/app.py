@@ -15,15 +15,24 @@ env = EmailEnv("hard")
 
 @app.on_event("startup")
 def call_llm_on_startup():
+    base = os.environ.get("API_BASE_URL")
+    key = os.environ.get("API_KEY")
+
+    # Only call when validator injects keys
+    if not base or not key:
+        print("LLM env vars not present — skipping startup call")
+        return
+
     print("Calling LLM for validator...")
+
+    client = OpenAI(base_url=base, api_key=key)
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[
-            {"role": "user", "content": "Reply with OK"}
-        ]
+        messages=[{"role": "user", "content": "Reply OK"}]
     )
-    print("LLM Response:", response.choices[0].message.content)
 
+    print("LLM Response:", response.choices[0].message.content)
 
 @app.post("/reset")
 def reset():
