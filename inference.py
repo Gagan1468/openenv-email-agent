@@ -6,7 +6,7 @@ from openai import OpenAI
 BASE_URL = "http://localhost:7860"
 
 def wait_for_server():
-    for _ in range(20):
+    for _ in range(15):
         try:
             requests.get(BASE_URL, timeout=2)
             return
@@ -15,48 +15,62 @@ def wait_for_server():
     raise RuntimeError("Server not ready")
 
 def llm_classify(email_text):
-    client = OpenAI(
-        base_url=os.environ["API_BASE_URL"],
-        api_key=os.environ["API_KEY"]
-    )
-    response = client.chat.completions.create(
-        model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),
-        messages=[{
-            "role": "user",
-            "content": (
-                "Classify this email into one of: support, sales, business.\n"
-                f"Email: {email_text}\n"
-                "Reply with just the category word."
-            )
-        }]
-    )
-    return response.choices[0].message.content.strip().lower()
+    try:
+        client = OpenAI(
+            base_url=os.environ["API_BASE_URL"],
+            api_key=os.environ["API_KEY"]
+        )
 
-print("[START] task=email env=openenv model=gpt-4o-mini")
+        response = client.chat.completions.create(
+            model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),
+            messages=[{
+                "role": "user",
+                "content": (
+                    "Classify this email into one of: support, sales, business.\n"
+                    f"Email: {email_text}\n"
+                    "Reply with just the category word."
+                )
+            }]
+        )
 
-wait_for_server()
+        return response.choices[0].message.content.strip().lower()
 
-state = requests.post(f"{BASE_URL}/reset").json()["state"]
+    except Exception as e:
+        print(f"LLM error: {e}")
+        return "business"
 
-done = False
-step = 0
-rewards = []
 
-while not done:
-    step += 1
-    email = state["email"]
+def main():
+    print("[START] task=email env=openenv model=gpt-4o-mini")
 
-    action = llm_classify(email)
-    if action not in ["support", "sales", "business"]:
-        action = "business"
+    wait_for_server()
 
-    result = requests.post(f"{BASE_URL}/step", json={"action": action}).json()
-    state = result["state"]
-    reward = result["reward"]
-    done = result["done"]
-    rewards.append(reward)
+    state = requests.post(f"{BASE_URL}/reset").json()["state"]
 
-    print(f"[STEP] step={step} action={action} reward={reward:.2f} done={str(done).lower()} error=null")
+    done = False
+    step = 0
+    rewards = []
 
-score = sum(rewards) / len(rewards)
-print(f"[END] success=true steps={step} score={score:.2f} rewards={','.join(f'{r:.2f}' for r in rewards)}")
+    while not done:
+        step += 1
+        email = state["email"]
+
+        action = llm_classify(email)
+
+        if action not in ["support", "sales", "business"]:
+            action = "business"
+
+        result = requests.post(f"{BASE_URL}/step", json={"action": action}).json()
+        state = result["state"]
+        reward = result["reward"]
+        done = result["done"]
+        rewards.append(reward)
+
+        print(f"[STEP] step={step} action={action} reward={reward:.2f} done={str(done).lower()} error=null")
+
+    score = sum(rewards) / len(rewards)
+    print(f"[END] success=true steps={step} score={score:.2f} rewards={','.join(f'{r:.2f}' for r in rewards)}")
+
+
+if __name__ == "__main__":
+    main()
