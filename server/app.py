@@ -62,19 +62,22 @@ def step(action: dict):
         "info": info
     }
 
-
 @app.get("/")
 def root():
     base = os.environ.get("API_BASE_URL")
-    key = os.environ.get("HF_TOKEN")        # ← changed from API_KEY
+    key = os.environ.get("API_KEY") or os.environ.get("HF_TOKEN")
 
-    print(f"API_BASE_URL: {base}")
-    print(f"HF_TOKEN present: {bool(key)}")
+    print(f"API_BASE_URL: '{base}'")
+    print(f"API_KEY present: {bool(key)}")
+
+    if not base or not key:
+        print("Missing credentials")
+        return {"message": "running", "llm": "unavailable"}
 
     try:
         client = OpenAI(base_url=base, api_key=key)
         response = client.chat.completions.create(
-            model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),   # ← use MODEL_NAME
+            model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),
             messages=[{"role": "user", "content": "Reply OK"}]
         )
         print("LLM call succeeded:", response.choices[0].message.content)
@@ -83,7 +86,6 @@ def root():
     except BaseException as e:
         print("LLM call failed:", repr(e))
         return {"message": "running", "llm": "unavailable"}
-
 
 def main():
     import uvicorn
