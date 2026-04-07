@@ -32,11 +32,12 @@ def make_llm_call(label: str = "LLM"):
 
 
 def startup_llm_trigger():
-    """Wait for server to be ready, then make an LLM call through the proxy."""
-    time.sleep(3)  # give uvicorn time to finish startup
-    print("Running startup LLM trigger...")
+    time.sleep(3)
+    print("ENV CHECK →", {
+        "API_BASE_URL": os.environ.get("API_BASE_URL", "NOT SET"),
+        "API_KEY": "SET" if os.environ.get("API_KEY") else "NOT SET"
+    })
     make_llm_call("startup-trigger")
-
 
 @app.on_event("startup")
 def startup():
