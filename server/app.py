@@ -6,14 +6,13 @@ from openai import OpenAI
 app = FastAPI()
 
 client = OpenAI(
-    base_url=os.environ["API_BASE_URL"],
-    api_key=os.environ["API_KEY"]
+    base_url=os.environ.get("API_BASE_URL", "https://api.openai.com/v1"),
+    api_key=os.environ.get("API_KEY", "test")
 )
 
 env = EmailEnv("hard")
 
 
-# 🔥 THIS PART FIXES YOUR FAILURE
 @app.on_event("startup")
 def call_llm_on_startup():
     print("Calling LLM for validator...")
