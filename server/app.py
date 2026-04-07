@@ -12,6 +12,22 @@ client = OpenAI(
 
 env = EmailEnv("hard")
 
+# 👇 ADD THIS BLOCK HERE
+def trigger_self_call():
+    time.sleep(2)
+    try:
+        requests.get("http://127.0.0.1:7860/")
+        print("Self-call triggered")
+    except Exception as e:
+        print("Self-call failed:", e)
+
+
+@app.on_event("startup")
+def startup():
+    threading.Thread(target=trigger_self_call).start()
+# 👆 END BLOCK
+
+
 
 @app.on_event("startup")
 def call_llm_on_startup():
