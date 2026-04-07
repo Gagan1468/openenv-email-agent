@@ -25,6 +25,7 @@ def validator_llm_call():
 
     except Exception as e:
         print("Validator proxy call failed:", e)
+validator_llm_call()
 
 app = FastAPI()
 
