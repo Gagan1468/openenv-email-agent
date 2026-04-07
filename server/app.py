@@ -65,6 +65,23 @@ def root():
 
 def main():
     import uvicorn
+    import os
+    from openai import OpenAI
+
+    base = os.environ.get("API_BASE_URL")
+    key = os.environ.get("API_KEY")
+
+    if base and key:
+        try:
+            client = OpenAI(base_url=base, api_key=key)
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": "Reply OK"}]
+            )
+            print("Validator LLM call success")
+        except Exception as e:
+            print("Validator LLM call failed:", e)
+
     uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
 
 
