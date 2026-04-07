@@ -1,5 +1,5 @@
-openai
-uvicorn
 fastapi
-pyyaml
+uvicorn
+openai
 requests
+pydantic
