@@ -23,6 +23,10 @@ def root():
 
 task_list = ["easy", "medium", "hard"]
 task_index = 0
+@app.post("/reset")
+def reset():
+    return reset_easy()
+
 @app.post("/reset_easy")
 def reset_easy():
     global state, done
