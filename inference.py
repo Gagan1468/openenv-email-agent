@@ -1,6 +1,5 @@
 import os
 import requests
-import time
 from openai import OpenAI
 
 BASE_URL = "http://localhost:7860"
@@ -23,12 +22,18 @@ def llm_classify(email):
     except:
         return "business"
 
+
 def run_task(task):
+    print(f"[START] task={task}", flush=True)
+
     state = requests.post(f"{BASE_URL}/reset_{task}").json()["state"]
     done = False
+    step = 0
     rewards = []
 
     while not done:
+        step += 1
+
         action = llm_classify(state["email"])
         result = requests.post(
             f"{BASE_URL}/step",
@@ -36,23 +41,23 @@ def run_task(task):
         ).json()
 
         state = result["state"]
-        rewards.append(result["reward"])
+        reward = result["reward"]
+        rewards.append(reward)
         done = result["done"]
 
-    return sum(rewards) / len(rewards)
+        print(f"[STEP] task={task} step={step} reward={reward}", flush=True)
+
+    score = sum(rewards) / len(rewards)
+    print(f"[END] task={task} score={score} steps={step}", flush=True)
+
+    return score
 
 
 def main():
     tasks = ["easy", "medium", "hard"]
-    scores = []
 
     for task in tasks:
-        score = run_task(task)
-        print(f"[TASK] {task} score={score}")
-        scores.append(score)
-
-    final = sum(scores) / len(scores)
-    print(f"[FINAL SCORE] {final}")
+        run_task(task)
 
 
 if __name__ == "__main__":
