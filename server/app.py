@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import random
-
+import random
+random.seed(42)
 app = FastAPI()
 
 emails = [
