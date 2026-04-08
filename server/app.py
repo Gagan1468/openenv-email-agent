@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import random
-import random
+
 random.seed(42)
+
 app = FastAPI()
 
 emails = [
@@ -74,27 +75,27 @@ def reset():
 def step(action: Action):
     global state, done
 
-correct = action.action == state["label"]
+    correct = action.action == state["label"]
 
-# base reward
-base = 0.55 if correct else 0.25
+    # base reward
+    base = 0.55 if correct else 0.25
 
-# difficulty bonus
-bonus = {
-    "easy": 0.05,
-    "medium": 0.1,
-    "hard": 0.15,
-    "expert": 0.2
-}
+    # difficulty bonus
+    bonus = {
+        "easy": 0.05,
+        "medium": 0.1,
+        "hard": 0.15,
+        "expert": 0.2
+    }
 
-reward = base + bonus.get(state["task"], 0)
+    reward = base + bonus.get(state["task"], 0)
 
-# add slight stochastic realism
-import random
-reward += random.uniform(-0.02, 0.02)
+    # add slight stochastic realism
+    import random
+    reward += random.uniform(-0.02, 0.02)
 
-# clamp
-reward = max(0.05, min(reward, 0.95))
+    # clamp
+    reward = max(0.05, min(reward, 0.95))
 
     done = True
 
