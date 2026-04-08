@@ -32,8 +32,12 @@ def reset():
 def step(action: Action):
     global state, done
 
-    correct = action.action == state["label"]
-    reward = 1.0 if correct else 0.0
+   correct = action.action == state["label"]
+
+if correct:
+    reward = 0.8
+else:
+    reward = 0.2
     done = True
 
     return {
