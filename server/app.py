@@ -24,31 +24,16 @@ def root():
 task_list = ["easy", "medium", "hard"]
 task_index = 0
 @app.post("/reset")
-def reset():
-    return reset_easy()
-
-@app.post("/reset_easy")
-def reset_easy():
+def reset(task: str = "easy"):
     global state, done
-    state = random.choice(emails)
-    state["task"] = "easy"
-    done = False
-    return {"state": state}
 
-@app.post("/reset_medium")
-def reset_medium():
-    global state, done
-    state = random.choice(emails)
-    state["task"] = "medium"
-    done = False
-    return {"state": state}
+    if task not in ["easy", "medium", "hard"]:
+        task = "easy"
 
-@app.post("/reset_hard")
-def reset_hard():
-    global state, done
     state = random.choice(emails)
-    state["task"] = "hard"
+    state["task"] = task
     done = False
+
     return {"state": state}
 
 @app.post("/step")
