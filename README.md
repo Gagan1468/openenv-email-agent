@@ -1,13 +1,22 @@
-# Email AI Agent Environment
+# OpenEnv Email Agent
 
-## Description
-AI agent classifies emails into categories.
+## Overview
+This environment simulates AI email routing in a customer support system.
 
-## Actions
-support, sales, business
+## Tasks
+- easy: basic classification
+- medium: varied phrasing
+- hard: ambiguous emails
+- expert: noisy classification
 
-## Observation
-Email text
+## Reward
+Continuous reward (0.05–0.95) based on:
+- correctness
+- task difficulty
+- stochastic realism
 
-## Run
-python run_agent.py
+## Agent
+LLM-based classifier via LiteLLM proxy.
+
+## Determinism
+Environment seeded for reproducible evaluation.
