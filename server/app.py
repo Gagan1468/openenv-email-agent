@@ -24,9 +24,10 @@ def root():
 @app.post("/reset")
 def reset():
     global state, done
+    difficulty = random.choice(["easy", "medium", "hard"])
     state = random.choice(emails)
     done = False
-    return {"state": state}
+    return {"state": {**state, "task": difficulty}}
 
 @app.post("/step")
 def step(action: Action):
