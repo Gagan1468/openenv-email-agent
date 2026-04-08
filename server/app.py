@@ -26,8 +26,9 @@ def reset():
     global state, done
     difficulty = random.choice(["easy", "medium", "hard"])
     state = random.choice(emails)
+    state["task"] = difficulty
     done = False
-    return {"state": {**state, "task": difficulty}}
+    return {"state": state}
 
 @app.post("/step")
 def step(action: Action):
@@ -35,10 +36,8 @@ def step(action: Action):
 
     correct = action.action == state["label"]
 
-    # base reward
     reward = 0.6 if correct else 0.2
 
-    # difficulty bonus
     task_bonus = {
         "easy": 0.05,
         "medium": 0.1,
@@ -46,7 +45,6 @@ def step(action: Action):
     }
 
     reward += task_bonus.get(state.get("task","easy"),0)
-
     reward = min(reward, 0.95)
 
     done = True
