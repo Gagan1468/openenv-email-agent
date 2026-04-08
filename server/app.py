@@ -42,16 +42,16 @@ def step(action: Action):
 
     correct = action.action == state["label"]
 
-    reward = 0.6 if correct else 0.2
+base = 0.3 if not correct else 0.7
 
-    task_bonus = {
-        "easy": 0.05,
-        "medium": 0.1,
-        "hard": 0.15
-    }
+bonus = {
+    "easy": 0.05,
+    "medium": 0.1,
+    "hard": 0.15
+}
 
-    reward += task_bonus.get(state.get("task","easy"),0)
-    reward = min(reward, 0.95)
+reward = base + bonus.get(state["task"], 0)
+reward = min(reward, 0.95)
 
     done = True
 
