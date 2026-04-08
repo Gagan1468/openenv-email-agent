@@ -20,14 +20,20 @@ class Action(BaseModel):
 @app.get("/")
 def root():
     return {"status": "ok"}
+task_list = ["easy", "medium", "hard"]
+task_index = 0
 
 @app.post("/reset")
 def reset():
-    global state, done
-    difficulty = random.choice(["easy", "medium", "hard"])
+    global state, done, task_index
+
+    task = task_list[task_index % 3]
+    task_index += 1
+
     state = random.choice(emails)
-    state["task"] = difficulty
+    state["task"] = task
     done = False
+
     return {"state": state}
 
 @app.post("/step")
