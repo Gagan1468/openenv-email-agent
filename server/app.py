@@ -33,12 +33,22 @@ def reset():
 def step(action: Action):
     global state, done
 
-   correct = action.action == state["label"]
+    correct = action.action == state["label"]
 
-if correct:
-    reward = 0.8
-else:
-    reward = 0.2
+    # base reward
+    reward = 0.6 if correct else 0.2
+
+    # difficulty bonus
+    task_bonus = {
+        "easy": 0.05,
+        "medium": 0.1,
+        "hard": 0.15
+    }
+
+    reward += task_bonus.get(state.get("task","easy"),0)
+
+    reward = min(reward, 0.95)
+
     done = True
 
     return {
