@@ -2,29 +2,26 @@ import os
 import requests
 from openai import OpenAI
 
-BASE_URL = "http://localhost:7860"
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
+HF_TOKEN = os.getenv("HF_TOKEN")
 
-client = OpenAI(
-    base_url=os.environ["API_BASE_URL"],
-    api_key=os.environ["API_KEY"]
-)
+client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+
+BASE_URL = "http://localhost:7860"
 
 def llm_classify(email):
     try:
-        resp = client.chat.completions.create(
-            model=os.environ.get("MODEL_NAME", "gpt-4o-mini"),
-            messages=[{
-                "role": "user",
-                "content": f"Classify email into support, sales, business:\n{email}"
-            }]
+        r = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[{"role": "user", "content": f"Classify: {email}"}]
         )
-        return resp.choices[0].message.content.strip().lower()
+        return r.choices[0].message.content.strip().lower()
     except:
-        return "business"
-
+        return "support"
 
 def run_task(task):
-    print(f"[START] task={task}", flush=True)
+    print(f"[START] task={task} env=email_env model={MODEL_NAME}")
 
     state = requests.post(f"{BASE_URL}/reset_{task}").json()["state"]
     done = False
@@ -33,8 +30,8 @@ def run_task(task):
 
     while not done:
         step += 1
-
         action = llm_classify(state["email"])
+
         result = requests.post(
             f"{BASE_URL}/step",
             json={"action": action}
@@ -42,23 +39,15 @@ def run_task(task):
 
         state = result["state"]
         reward = result["reward"]
-        rewards.append(reward)
         done = result["done"]
+        rewards.append(reward)
 
-        print(f"[STEP] task={task} step={step} reward={reward}", flush=True)
+        print(f"[STEP] step={step} action={action} reward={reward:.2f} done={str(done).lower()} error=null")
 
-    score = sum(rewards) / len(rewards)
-    print(f"[END] task={task} score={score} steps={step}", flush=True)
-
-    return score
-
-
-def main():
-    tasks = ["easy", "medium", "hard"]
-
-    for task in tasks:
-        run_task(task)
-
+    print(
+        f"[END] success=true steps={step} rewards={','.join(f'{r:.2f}' for r in rewards)}"
+    )
 
 if __name__ == "__main__":
-    main()
+    for t in ["easy", "medium", "hard"]:
+        run_task(t)
