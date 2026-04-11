@@ -77,29 +77,22 @@ def step(action: Action):
 
     correct = action.action == state["label"]
 
-# base reward
-reward = 0.65 if correct else 0.35
+    # base reward
+    reward = 0.65 if correct else 0.35
 
-bonus = {
-    "easy": 0.05,
-    "medium": 0.10,
-    "hard": 0.15,
-    "expert": 0.20
-}
+    bonus = {
+        "easy": 0.05,
+        "medium": 0.10,
+        "hard": 0.15,
+        "expert": 0.20
+    }
 
-reward += bonus.get(state["task"], 0)
-
-# force strictly inside (0,1)
-if reward <= 0:
-    reward = 0.01
-elif reward >= 1:
-    reward = 0.99
+    reward += bonus.get(state["task"], 0)
 
     # add slight stochastic realism
-    import random
     reward += random.uniform(-0.02, 0.02)
 
-    # clamp
+    # force strictly inside (0,1)
     reward = max(0.05, min(reward, 0.95))
 
     done = True
@@ -109,7 +102,6 @@ elif reward >= 1:
         "reward": reward,
         "done": done
     }
-
 
 def main():
     import uvicorn
