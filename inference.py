@@ -44,9 +44,17 @@ def run_task(task):
 
         print(f"[STEP] step={step} action={action} reward={reward:.2f} done={str(done).lower()} error=null")
 
+    # compute score
+    score = sum(rewards) / len(rewards)
+
+    # clamp strictly between (0,1)
+    score = max(0.01, min(0.99, score))
+
     print(
         f"[END] success=true steps={step} rewards={','.join(f'{r:.2f}' for r in rewards)}"
     )
+
+    return score
 
 if __name__ == "__main__":
     for t in ["easy", "medium", "hard"]:
