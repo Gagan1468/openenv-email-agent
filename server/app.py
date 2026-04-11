@@ -77,18 +77,23 @@ def step(action: Action):
 
     correct = action.action == state["label"]
 
-    # base reward
-    base = 0.55 if correct else 0.25
+# base reward
+reward = 0.65 if correct else 0.35
 
-    # difficulty bonus
-    bonus = {
-        "easy": 0.05,
-        "medium": 0.1,
-        "hard": 0.15,
-        "expert": 0.2
-    }
+bonus = {
+    "easy": 0.05,
+    "medium": 0.10,
+    "hard": 0.15,
+    "expert": 0.20
+}
 
-    reward = base + bonus.get(state["task"], 0)
+reward += bonus.get(state["task"], 0)
+
+# force strictly inside (0,1)
+if reward <= 0:
+    reward = 0.01
+elif reward >= 1:
+    reward = 0.99
 
     # add slight stochastic realism
     import random
