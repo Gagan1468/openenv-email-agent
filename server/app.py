@@ -1,6 +1,16 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import random
+import time
+
+def wait_for_server():
+    for _ in range(20):
+        try:
+            requests.get("http://localhost:7860")
+            return
+        except:
+            time.sleep(1)
+wait_for_server()
 
 random.seed(42)
 
