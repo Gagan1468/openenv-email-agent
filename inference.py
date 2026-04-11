@@ -1,6 +1,16 @@
 import os
 import requests
 from openai import OpenAI
+import time
+
+def wait_for_server():
+    for _ in range(20):
+        try:
+            requests.get("http://localhost:7860")
+            return
+        except:
+            time.sleep(1)
+wait_for_server()
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
