@@ -92,7 +92,7 @@ def step(action: Action):
     # add slight stochastic realism
     reward += random.uniform(-0.02, 0.02)
 
-    # force strictly inside (0,1)
+    # clamp strictly inside (0,1)
     reward = max(0.05, min(reward, 0.95))
 
     done = True
@@ -102,6 +102,7 @@ def step(action: Action):
         "reward": reward,
         "done": done
     }
+
 
 def main():
     import uvicorn
